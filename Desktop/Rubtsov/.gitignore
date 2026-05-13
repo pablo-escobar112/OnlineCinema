@@ -1,9 +1,11 @@
+# Папки сборки
 bin/
 obj/
 .vs/
 *.user
 *.suo
 Debug/
+Release/
 packages/
 *.mdf
 *.ldf
@@ -13,3 +15,5 @@ AlgebraApp.Tests/
 InventoryWpfApp/
 WpfApp1/
 practica01.01_tema2/
+ZaytserG.test/
+ZaytsevG/
