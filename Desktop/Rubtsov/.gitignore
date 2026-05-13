@@ -1,0 +1,15 @@
+bin/
+obj/
+.vs/
+*.user
+*.suo
+Debug/
+packages/
+*.mdf
+*.ldf
+
+# Лишние проекты
+AlgebraApp.Tests/
+InventoryWpfApp/
+WpfApp1/
+practica01.01_tema2/
