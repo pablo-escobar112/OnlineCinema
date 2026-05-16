@@ -1,0 +1,41 @@
+﻿<Window x:Class="OnlineCinema.App.CollectionDetailWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Подборка" Height="500" Width="600"
+        WindowStartupLocation="CenterOwner" Background="#f5f6fa">
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+            <Button Content="+ Добавить фильм" Click="AddMovie_Click"
+                    Background="#27ae60" Foreground="White" Height="30" Width="150"/>
+            <TextBlock x:Name="MovieCountText" VerticalAlignment="Center" Margin="15,0,0,0" FontSize="13"/>
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1">
+            <ItemsControl x:Name="ItemsList">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="White" Padding="10" Margin="0,0,0,5" CornerRadius="5">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding MovieTitle}" FontWeight="Bold"/>
+                                    <TextBlock Text="{Binding GenreName}" Foreground="#666"/>
+                                </StackPanel>
+                                <Button Grid.Column="1" Content="✕" Tag="{Binding Id}" Click="RemoveMovie_Click"
+                                        Background="#e74c3c" Foreground="White" Width="35" Height="30"/>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
+</Window>

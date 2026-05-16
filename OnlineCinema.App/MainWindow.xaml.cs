@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿// OnlineCinema.App/MainWindow.xaml.cs
+using System.Linq;
 using System.Windows;
 using CinemaModule.Data;
 using CinemaModule.Services;
@@ -52,13 +53,20 @@ namespace OnlineCinema.App
             StatusText.Text = fav.Any() ? $"Избранное: {fav.Count}" : "Пусто";
         }
 
+        private void ShowCollections_Click(object s, RoutedEventArgs e)
+        {
+            var window = new CollectionsWindow(_userId);
+            window.Owner = this;
+            window.ShowDialog();
+        }
+
         private void ShowHistory_Click(object s, RoutedEventArgs e)
         {
             var history = _db.GetViewHistory(_userId);
             string msg = history.Any()
-                ? string.Join("\n", history.Select(h => $"{h.MovieTitle} — {h.ViewDate:dd.MM.yyyy}"))
+                ? string.Join("\n", history.Select(h => $"📺 {h.MovieTitle} ({h.GenreName}) — {h.ViewDate:dd.MM.yyyy HH:mm}"))
                 : "История пуста.";
-            MessageBox.Show(msg, "История");
+            MessageBox.Show(msg, "📜 История просмотров");
         }
 
         private void ShowSubscription_Click(object s, RoutedEventArgs e)
@@ -79,28 +87,17 @@ namespace OnlineCinema.App
                 if (movies.Any())
                 {
                     DisplayMovies(movies);
-                    StatusText.Text = $"🎯 Рекомендации по жанру: {movies.FirstOrDefault()?.GenreName}";
+                    StatusText.Text = $"🎯 Рекомендации: {movies.FirstOrDefault()?.GenreName}";
                     MessageBox.Show(
-                        $"Рекомендуем посмотреть фильмы жанра «{movies.FirstOrDefault()?.GenreName}»!\nНайдено фильмов: {movies.Count}",
-                        "🎯 Рекомендации",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-                else
-                {
-                    StatusText.Text = "Нет фильмов этого жанра";
-                    MessageBox.Show("К сожалению, фильмов рекомендуемого жанра нет в каталоге.",
-                        "Рекомендации", MessageBoxButton.OK, MessageBoxImage.Information);
+                        $"Рекомендуем фильмы жанра «{movies.FirstOrDefault()?.GenreName}»!\nНайдено: {movies.Count}",
+                        "🎯 Рекомендации", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
             else
             {
-                StatusText.Text = "Недостаточно данных";
-                MessageBox.Show(
-                    "Недостаточно данных для рекомендаций.\n\nПосмотрите несколько фильмов, чтобы мы могли определить ваш любимый жанр!",
-                    "🎯 Рекомендации",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                StatusText.Text = "Мало данных";
+                MessageBox.Show("Посмотрите фильмы для рекомендаций!", "🎯 Рекомендации",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 

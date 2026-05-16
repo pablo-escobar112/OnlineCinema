@@ -288,5 +288,138 @@ namespace CinemaModule.Data
                 }
             }
         }
+
+        /// <summary>
+        /// Создаёт новую подборку и возвращает её ID.
+        /// </summary>
+        public int CreateCollection(int userId, string name, string description)
+        {
+            string query = @"INSERT INTO MovieCollections (UserId, Name, Description) 
+                     VALUES (@uid, @name, @desc); SELECT SCOPE_IDENTITY();";
+
+            using (var c = new SqlConnection(ConnectionString))
+            using (var cmd = new SqlCommand(query, c))
+            {
+                cmd.Parameters.AddWithValue("@uid", userId);
+                cmd.Parameters.AddWithValue("@name", name);
+                cmd.Parameters.AddWithValue("@desc", description);
+                c.Open();
+                return Convert.ToInt32(cmd.ExecuteScalar());
+            }
+        }
+
+        /// <summary>
+        /// Получает все подборки пользователя с количеством фильмов.
+        /// </summary>
+        public List<MovieCollection> GetUserCollections(int userId)
+        {
+            var list = new List<MovieCollection>();
+            string query = @"SELECT c.Id, c.UserId, c.Name, c.Description, c.CreatedDate,
+                     (SELECT COUNT(*) FROM MovieCollectionItems WHERE CollectionId = c.Id) as MovieCount
+                     FROM MovieCollections c WHERE c.UserId = @uid ORDER BY c.CreatedDate DESC";
+
+            using (var c = new SqlConnection(ConnectionString))
+            using (var cmd = new SqlCommand(query, c))
+            {
+                cmd.Parameters.AddWithValue("@uid", userId);
+                c.Open();
+                using (var r = cmd.ExecuteReader())
+                    while (r.Read())
+                        list.Add(new MovieCollection
+                        {
+                            Id = r.GetInt32(0),
+                            UserId = r.GetInt32(1),
+                            Name = r.GetString(2),
+                            Description = r.IsDBNull(3) ? "" : r.GetString(3),
+                            CreatedDate = r.GetDateTime(4),
+                            MovieCount = r.GetInt32(5)
+                        });
+            }
+            return list;
+        }
+
+        /// <summary>
+        /// Получает фильмы из подборки.
+        /// </summary>
+        public List<MovieCollectionItem> GetCollectionItems(int collectionId)
+        {
+            var list = new List<MovieCollectionItem>();
+            string query = @"SELECT ci.Id, ci.CollectionId, ci.MovieId, m.Title, g.Name, ci.AddedDate
+                     FROM MovieCollectionItems ci
+                     JOIN Movies m ON ci.MovieId = m.Id
+                     JOIN Genres g ON m.GenreId = g.Id
+                     WHERE ci.CollectionId = @cid ORDER BY ci.AddedDate DESC";
+
+            using (var c = new SqlConnection(ConnectionString))
+            using (var cmd = new SqlCommand(query, c))
+            {
+                cmd.Parameters.AddWithValue("@cid", collectionId);
+                c.Open();
+                using (var r = cmd.ExecuteReader())
+                    while (r.Read())
+                        list.Add(new MovieCollectionItem
+                        {
+                            Id = r.GetInt32(0),
+                            CollectionId = r.GetInt32(1),
+                            MovieId = r.GetInt32(2),
+                            MovieTitle = r.GetString(3),
+                            GenreName = r.GetString(4),
+                            AddedDate = r.GetDateTime(5)
+                        });
+            }
+            return list;
+        }
+
+        /// <summary>
+        /// Добавляет фильм в подборку.
+        /// </summary>
+        public bool AddMovieToCollection(int collectionId, int movieId)
+        {
+            string query = @"IF NOT EXISTS (SELECT 1 FROM MovieCollectionItems WHERE CollectionId=@cid AND MovieId=@mid)
+                     BEGIN INSERT INTO MovieCollectionItems (CollectionId, MovieId) VALUES (@cid, @mid); SELECT 1; END
+                     ELSE SELECT 0;";
+
+            using (var c = new SqlConnection(ConnectionString))
+            using (var cmd = new SqlCommand(query, c))
+            {
+                cmd.Parameters.AddWithValue("@cid", collectionId);
+                cmd.Parameters.AddWithValue("@mid", movieId);
+                c.Open();
+                return (int)cmd.ExecuteScalar() == 1;
+            }
+        }
+
+        /// <summary>
+        /// Удаляет фильм из подборки.
+        /// </summary>
+        public bool RemoveMovieFromCollection(int collectionId, int movieId)
+        {
+            string query = "DELETE FROM MovieCollectionItems WHERE CollectionId=@cid AND MovieId=@mid";
+
+            using (var c = new SqlConnection(ConnectionString))
+            using (var cmd = new SqlCommand(query, c))
+            {
+                cmd.Parameters.AddWithValue("@cid", collectionId);
+                cmd.Parameters.AddWithValue("@mid", movieId);
+                c.Open();
+                return cmd.ExecuteNonQuery() > 0;
+            }
+        }
+
+        /// <summary>
+        /// Удаляет подборку целиком.
+        /// </summary>
+        public bool DeleteCollection(int collectionId)
+        {
+            string query = "DELETE FROM MovieCollections WHERE Id=@id";
+
+            using (var c = new SqlConnection(ConnectionString))
+            using (var cmd = new SqlCommand(query, c))
+            {
+                cmd.Parameters.AddWithValue("@id", collectionId);
+                c.Open();
+                return cmd.ExecuteNonQuery() > 0;
+            }
+        }
     }
 }

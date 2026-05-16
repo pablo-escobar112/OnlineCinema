@@ -83,5 +83,100 @@ namespace CinemaModule.Tests
             int genre = _service.GetRecommendedGenre(watched);
             ClassicAssert.AreEqual(-1, genre);
         }
+
+        [Test]
+        public void CreateCollection_ValidName_ReturnsTrue()
+        {
+            bool result = _service.CreateCollection("Любимые фильмы", "Описание", out string error);
+            ClassicAssert.IsTrue(result);
+            ClassicAssert.IsEmpty(error);
+        }
+
+        [Test]
+        public void CreateCollection_EmptyName_ReturnsFalse()
+        {
+            bool result = _service.CreateCollection("", "", out string error);
+            ClassicAssert.IsFalse(result);
+            ClassicAssert.IsNotEmpty(error);
+        }
+
+        [Test]
+        public void AddToCollection_NewMovie_ReturnsTrue()
+        {
+            var ids = new List<int> { 1, 2 };
+            bool result = _service.AddToCollection(ids, 3);
+            ClassicAssert.IsTrue(result);
+            ClassicAssert.Contains(3, ids);
+        }
+
+        [Test]
+        public void AddToCollection_ExistingMovie_ReturnsFalse()
+        {
+            var ids = new List<int> { 1, 2 };
+            bool result = _service.AddToCollection(ids, 2);
+            ClassicAssert.IsFalse(result);
+        }
+
+        [Test]
+        public void RemoveFromCollection_ExistingMovie_ReturnsTrue()
+        {
+            var ids = new List<int> { 1, 2, 3 };
+            bool result = _service.RemoveFromCollection(ids, 2);
+            ClassicAssert.IsTrue(result);
+            ClassicAssert.AreEqual(2, ids.Count);
+        }
+
+        [Test]
+        public void RemoveFromCollection_NotExistingMovie_ReturnsFalse()
+        {
+            var ids = new List<int> { 1, 3 };
+            bool result = _service.RemoveFromCollection(ids, 5);
+            ClassicAssert.IsFalse(result);
+        }
+
+        [Test]
+        public void GetMovieCount_ThreeMovies_Returns3()
+        {
+            var ids = new List<int> { 1, 2, 3 };
+            int count = _service.GetMovieCount(ids);
+            ClassicAssert.AreEqual(3, count);
+        }
+
+        [Test]
+        public void GetMovieCount_EmptyList_Returns0()
+        {
+            var ids = new List<int>();
+            int count = _service.GetMovieCount(ids);
+            ClassicAssert.AreEqual(0, count);
+        }
+
+        [Test]
+        public void IsMovieAvailableBySubscription_NoSubscription_ReturnsFalse()
+        {
+            bool result = _service.IsMovieAvailableBySubscription(12, false, "Базовый");
+            ClassicAssert.IsFalse(result);
+        }
+
+        [Test]
+        public void IsMovieAvailableBySubscription_BasicAdultMovie_ReturnsFalse()
+        {
+            bool result = _service.IsMovieAvailableBySubscription(18, true, "Базовый");
+            ClassicAssert.IsFalse(result);
+        }
+
+        [Test]
+        public void IsMovieAvailableBySubscription_PremiumAdultMovie_ReturnsTrue()
+        {
+            bool result = _service.IsMovieAvailableBySubscription(18, true, "Премиум");
+            ClassicAssert.IsTrue(result);
+        }
+
+        [Test]
+        public void IsMovieAvailableBySubscription_BasicRegularMovie_ReturnsTrue()
+        {
+            bool result = _service.IsMovieAvailableBySubscription(12, true, "Базовый");
+            ClassicAssert.IsTrue(result);
+        }
+
     }
 }
